@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Festa – AI Celebration & Event Planner</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪔</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--ink:#000;--mute:#555;--card:#fff;--line:#d4d4d4;--soft:#f2f2f2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "DM Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.1;margin:0}
+main{max-width:1000px;margin:0 auto;padding:24px 16px 64px}
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:end;padding:28px 0}
+.hero h1{font-size:clamp(2.2rem,6vw,3.8rem);font-weight:800}
+.hero p{color:var(--mute);max-width:46ch}
+.count{background:#000;color:#fff;border-radius:20px;padding:20px;text-align:center}
+.count b{display:block;font:800 4.5rem/1 "Bricolage Grotesque",sans-serif;color:#fff}
+form{background:var(--card);border:2px solid #000;border-radius:16px;padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label{display:grid;gap:4px;font-size:.88rem;font-weight:700}
+input,select,textarea{font:inherit;padding:10px;border:1px solid #000;border-radius:10px;background:#fff;color:#000}
+.wide{grid-column:1/-1}
+button{font:700 1rem "DM Sans",sans-serif;border:2px solid #000;border-radius:12px;padding:12px 20px;background:#000;color:#fff;cursor:pointer}
+button:hover{background:#fff;color:#000}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.tab:focus-visible{outline:3px solid #000;outline-offset:3px}
+button:disabled{opacity:.6;cursor:wait}
+#out{margin-top:28px}
+.badge{display:inline-block;font-size:.8rem;padding:3px 10px;border-radius:99px;border:1px solid #000;color:#000;margin-left:8px;font-weight:500}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0}
+.tab{background:#fff;border:2px solid #000;color:#000;padding:8px 16px;border-radius:99px}
+.tab:hover{background:var(--soft)}
+.tab[aria-selected=true]{background:#000;color:#fff}
+.panel{background:var(--card);border:2px solid #000;border-radius:16px;padding:20px}
+.row{display:grid;grid-template-columns:130px 1fr 130px;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.bar{height:12px;border-radius:6px;background:var(--soft);border:1px solid #000;overflow:hidden}.bar i{display:block;height:100%;background:#000}
+.tip{grid-column:2/-1;color:var(--mute);font-size:.85rem;margin-top:-6px}
+.stage{padding:10px 0 10px 16px;border-left:4px solid #000;margin-left:6px}
+.stage h3{font-size:1.05rem;margin-bottom:6px}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:2px 0;font-weight:400}.chk input{margin-top:5px;accent-color:#000}
+.done{text-decoration:line-through;color:var(--mute)}
+.vend{display:grid;grid-template-columns:1fr 150px;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.vend small{color:var(--mute);display:block;font-weight:400}
+.ideas{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ideas ul{padding-left:18px;margin:8px 0 0}
+@media(max-width:720px){.hero,form,.ideas{grid-template-columns:1fr}.row{grid-template-columns:1fr 90px}.row .bar{grid-column:1/-1}.tip{grid-column:1}}
+@media print{form,.tabs,.hero button{display:none}}
+</style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div>
+      <h1>Plan the celebration. Skip the spreadsheet.</h1>
+      <p>Tell Festa about your wedding, birthday or community event. Get a budget, a week-by-week timeline, a vendor checklist and ideas made for you.</p>
+    </div>
+    <div class="count" aria-live="polite"><b id="days">–</b>days to go</div>
+  </section>
+
+  <form id="f">
+    <label>Event type
+      <select id="type"><option>Wedding</option><option>Birthday</option><option>Community event</option><option>Anniversary</option><option>Baby shower</option></select></label>
+    <label>Event date<input id="date" type="date" required></label>
+    <label>City<input id="city" placeholder="e.g. Chandigarh"></label>
+    <label>Guests<input id="guests" type="number" min="5" value="100" required></label>
+    <label>Total budget (₹)<input id="budget" type="number" min="5000" step="1000" value="500000" required></label>
+    <label>Style<select id="style"><option>Traditional</option><option>Modern</option><option>Minimal & intimate</option><option>Grand & lavish</option></select></label>
+    <label class="wide">Anything special? (theme, diet, must-haves)
+      <textarea id="prefs" rows="2" placeholder="e.g. pure veg menu, outdoor lawn, live music, kids' corner"></textarea></label>
+    <div class="wide"><button id="go" type="submit">Generate my plan</button></div>
+  </form>
+
+  <section id="out" hidden>
+    <h2>Your plan<span class="badge" id="src"></span></h2>
+    <p id="sum"></p>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-t="budget">Budget</button>
+      <button class="tab" role="tab" data-t="timeline">Timeline</button>
+      <button class="tab" role="tab" data-t="vendors">Vendors</button>
+      <button class="tab" role="tab" data-t="ideas">Ideas</button>
+    </div>
+    <div class="panel" id="panel"></div>
+    <p><button class="tab" onclick="window.print()">Print or save as PDF</button></p>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const inr = n => "₹" + Math.round(n).toLocaleString("en-IN");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let plan, input, tab = "budget", state = {};
+
+const d = new Date(); d.setDate(d.getDate() + 90); $("date").valueAsDate = d;
+const daysTo = v => Math.max(0, Math.ceil((new Date(v) - new Date().setHours(0,0,0,0)) / 864e5));
+$("date").oninput = () => $("days").textContent = daysTo($("date").value);
+$("days").textContent = daysTo($("date").value);
+
+function save(){ try{ localStorage.setItem("festa", JSON.stringify({plan, input, state})); }catch(e){} }
+function load(){ try{ const s = JSON.parse(localStorage.getItem("festa")); if(s){ plan=s.plan; input=s.input; state=s.state||{}; return true; } }catch(e){} }
+
+// Offline fallback so the app never breaks if the AI call fails
+function fallback(i){
+  const split = {Wedding:[["Venue",25],["Catering",30],["Decor & flowers",12],["Photo & video",10],["Attire & makeup",10],["Music & entertainment",6],["Invitations & gifts",3],["Buffer",4]],
+    default:[["Venue",25],["Catering",35],["Decor",12],["Entertainment",10],["Photography",8],["Invitations & favours",4],["Buffer",6]]};
+  const b = (i.type==="Wedding"?split.Wedding:split.default).map(([category,percent])=>({category,percent,tip:"Get 3 quotes and negotiate a package deal."}));
+  const w = i.weeks;
+  const stages = [[w,"Set date, budget and guest list"],[Math.round(w*.75),"Book venue and caterer"],[Math.round(w*.5),"Book photographer, decor and entertainment"],[Math.round(w*.3),"Send invitations and finalise menu"],[Math.round(w*.1),"Confirm all vendors and RSVPs"]];
+  return {summary:`A ${i.style.toLowerCase()} ${i.type.toLowerCase()} for ${i.guests} guests within ${inr(i.budget)}. (Offline template: connect the AI key for fully personalised plans.)`,
+    budget:b,
+    timeline:[...stages.map(([n,t])=>({when:`${Math.max(n,1)} weeks before`,tasks:[t]})),{when:"Event day",tasks:["Vendor check-ins","Assign a point person for guests"]}],
+    vendors:["Venue","Caterer","Decorator","Photographer","Music / DJ","Invitations & printing"].map(name=>({name,notes:"Compare 3 quotes, get terms in writing."})),
+    ideas:{themes:[i.style+" colour story","Marigold & fairy lights","Garden brunch"],menu:["Welcome mocktails","Live chaat counter","Regional thali"],activities:["Photo booth","Live music","Guest memory wall"]}};
+}
+
+$("f").onsubmit = async e => {
+  e.preventDefault();
+  input = {type:$("type").value, date:$("date").value, weeks:Math.max(1,Math.round(daysTo($("date").value)/7)),
+    guests:+$("guests").value, budget:+$("budget").value, city:$("city").value, style:$("style").value,
+    prefs:`${$("style").value} style. ${$("prefs").value}`};
+  const btn = $("go"); btn.disabled = true; btn.textContent = "Planning…";
+  let src = "AI-generated";
+  try{
+    const r = await fetch("/api/plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(input)});
+    if(!r.ok) throw 0; plan = await r.json();
+    if(!plan.budget || !plan.timeline) throw 0;
+  }catch(err){ plan = fallback(input); src = "Offline template"; }
+  plan._src = src; state = {};
+  btn.disabled = false; btn.textContent = "Generate my plan";
+  save(); show(); $("out").scrollIntoView({behavior:"smooth"});
+};
+
+function show(){
+  $("out").hidden = false;
+  $("src").textContent = plan._src || "Saved plan";
+  $("sum").textContent = plan.summary;
+  document.querySelectorAll(".tab[data-t]").forEach(t => t.setAttribute("aria-selected", t.dataset.t===tab));
+  const p = $("panel");
+  if(tab==="budget"){
+    p.innerHTML = plan.budget.map(b=>`<div class="row"><strong>${esc(b.category)}</strong><div class="bar"><i style="width:${b.percent}%"></i></div><span>${inr(input.budget*b.percent/100)} · ${b.percent}%</span>${b.tip?`<div class="tip">${esc(b.tip)}</div>`:""}</div>`).join("")
+      + `<p><strong>Per guest:</strong> ${inr(input.budget/input.guests)}</p>`;
+  } else if(tab==="timeline"){
+    p.innerHTML = plan.timeline.map((s,si)=>`<div class="stage"><h3>${esc(s.when)}</h3>${s.tasks.map((t,ti)=>{const k=`t${si}_${ti}`;return `<label class="chk"><input type="checkbox" data-k="${k}" ${state[k]?"checked":""}><span class="${state[k]?"done":""}">${esc(t)}</span></label>`}).join("")}</div>`).join("");
+    p.querySelectorAll("input").forEach(c=>c.onchange=()=>{state[c.dataset.k]=c.checked;save();show();});
+  } else if(tab==="vendors"){
+    p.innerHTML = plan.vendors.map((v,i)=>`<div class="vend"><div><strong>${esc(v.name)}</strong><small>${esc(v.notes)}</small></div><select data-k="v${i}">${["To contact","Quote received","Booked","Paid"].map(o=>`<option ${state["v"+i]===o?"selected":""}>${o}</option>`).join("")}</select></div>`).join("");
+    p.querySelectorAll("select").forEach(s=>s.onchange=()=>{state[s.dataset.k]=s.value;save();});
+  } else {
+    const L = (h,a)=>`<div><h3>${h}</h3><ul>${a.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+    p.innerHTML = `<div class="ideas">${L("Themes",plan.ideas.themes)}${L("Menu",plan.ideas.menu)}${L("Activities",plan.ideas.activities)}</div>`;
+  }
+}
+document.querySelectorAll(".tab[data-t]").forEach(t => t.onclick = () => { tab = t.dataset.t; show(); });
+if(load()){ show(); }
+</script>
+</body>
+</html>
